@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>刷步数</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0d1117;display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:-apple-system,BlinkMacSystemFont,sans-serif}
+.card{text-align:center;padding:40px 24px}
+h1{color:#e6edf3;font-size:24px;margin-bottom:8px}
+.sub{color:#8b949e;font-size:14px;margin-bottom:32px}
+.btn{display:inline-block;background:#238636;color:#fff;border:none;padding:18px 48px;font-size:20px;border-radius:12px;cursor:pointer;transition:.2s;width:100%;max-width:280px}
+.btn:active{background:#2ea043;transform:scale(.97)}
+.btn.loading{background:#484f58;pointer-events:none}
+#status{margin-top:20px;font-size:14px;min-height:24px}
+.success{color:#3fb950}
+.fail{color:#f85149}
+.log{margin-top:16px;color:#8b949e;font-size:12px;max-height:200px;overflow-y:auto;text-align:left}
+.token-hint{color:#8b949e;font-size:12px;margin-top:24px}
+.token-hint a{color:#58a6ff}
+</style>
+</head>
+<body>
+<div class="card">
+<h1>🏃 刷步数</h1>
+<p class="sub">所有账号 18000~25000 步</p>
+<button class="btn" onclick="trigger()">一键触发</button>
+<div id="status"></div>
+<div class="log" id="log"></div>
+<div class="token-hint" id="hint">
+首次使用需设置 Token → <a href="#" onclick="setToken()">点击设置</a>
+</div>
+</div>
+<script>
+const URL="https://api.github.com/repos/u201912007-dev/mimotion/actions/workflows/run.yml/dispatches";
+function getToken(){return localStorage.getItem("gh_pat")}
+function log(msg,cls){const d=document.getElementById("log");d.innerHTML+=`<div class="${cls||''}">[${new Date().toLocaleTimeString()}] ${msg}</div>`}
+function setToken(){
+  const t=prompt("请输入 GitHub PAT Token（只需设置一次）：",getToken()||"");
+  if(t){localStorage.setItem("gh_pat",t.trim());document.getElementById("hint").textContent="Token 已保存 ✅  · 重新设置"}
+}
+async function trigger(){
+  const token=getToken();
+  if(!token){setToken();if(!getToken())return}
+  const btn=document.querySelector(".btn"),st=document.getElementById("status");
+  btn.classList.add("loading");btn.textContent="触发中...";st.textContent="";st.className="";
+  try{
+    const r=await fetch(URL,{method:"POST",headers:{Authorization:"token "+token,Accept:"application/vnd.github+json"},body:JSON.stringify({ref:"master"})});
+    if(r.ok||r.status===204){
+      st.textContent="✅ 已触发，约2分钟后完成";st.className="success";log("触发成功","success");
+      btn.textContent="已触发";setTimeout(()=>{btn.textContent="一键触发";btn.classList.remove("loading")},3000);
+    }else{throw new Error(r.status+" "+await r.text())}
+  }catch(e){
+    st.textContent="❌ 失败: "+e.message;st.className="fail";log("失败: "+e.message,"fail");
+    btn.textContent="重试";btn.classList.remove("loading")
+  }
+}
+</script>
+</body>
+</html>
