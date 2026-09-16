@@ -2,8 +2,9 @@ name: 刷步数
 
 on:
   schedule:
-    # GitHub Actions 使用 UTC；对应北京时间 08:07、10:07、12:07、14:07、16:07、22:07
-    - cron: '7 0,2,4,6,8,14 * * *'
+    # 使用北京时间，并避开每小时开始时的 GitHub Actions 调度高峰
+    - cron: '23 8,10,12,14,16,22 * * *'
+      timezone: 'Asia/Shanghai'
   workflow_dispatch:
 
 permissions:
