@@ -51,16 +51,16 @@ def push_plus(token, title, content):
         "channel": "wechat"
     }
     try:
-        response = requests.post(requestUrl, data=data)
+        response = requests.post(requestUrl, data=data, timeout=(10, 30))
         if response.status_code == 200:
             json_res = response.json()
             print(f"pushplus推送完毕：{json_res['code']}-{json_res['msg']}")
         else:
             print("pushplus推送失败")
     except requests.exceptions.RequestException as e:
-        print(f"pushplus推送网络异常: {e}")
+        print(f"pushplus推送网络异常: {type(e).__name__}")
     except Exception as e:
-        print(f"pushplus推送未知异常: {e}")
+        print(f"pushplus推送未知异常: {type(e).__name__}")
 
 
 def push_wechat_webhook(key, title, content):
@@ -83,7 +83,7 @@ def push_wechat_webhook(key, title, content):
     }
 
     try:
-        response = requests.post(requestUrl, json=payload)
+        response = requests.post(requestUrl, json=payload, timeout=(10, 30))
         if response.status_code == 200:
             json_res = response.json()
             if json_res.get('errcode') == 0:
@@ -93,9 +93,9 @@ def push_wechat_webhook(key, title, content):
         else:
             print("企业微信推送失败")
     except requests.exceptions.RequestException as e:
-        print(f"企业微信推送异常: {e}")
+        print(f"企业微信推送异常: {type(e).__name__}")
     except Exception as e:
-        print(f"企业微信推送发生未知异常: {e}")
+        print(f"企业微信推送发生未知异常: {type(e).__name__}")
 
 
 def buildWeChatContent(title, content) -> str:
@@ -117,10 +117,8 @@ def push_telegram_bot(bot_token, chat_id, content):
         "text": content,
         "parse_mode": "HTML"
     }
-    print(f"post to url: {requestUrl}")
-    print(f"payload: {json.dumps(payload)}")
     try:
-        response = requests.post(requestUrl, json=payload)
+        response = requests.post(requestUrl, json=payload, timeout=(10, 30))
         if response.status_code == 200:
             json_res = response.json()
             if json_res.get('ok') is True:
@@ -130,9 +128,9 @@ def push_telegram_bot(bot_token, chat_id, content):
         else:
             print(f"telegram bot推送失败: {response.status_code}")
     except requests.exceptions.RequestException as e:
-        print(f"telegram bot推送异常: {e}")
+        print(f"telegram bot推送异常: {type(e).__name__}")
     except Exception as e:
-        print(f"telegram bot推送发生未知异常: {e}")
+        print(f"telegram bot推送发生未知异常: {type(e).__name__}")
 
 
 def push_results(exec_results, summary, config: PushConfig):
@@ -175,7 +173,7 @@ def not_in_push_time_range(config: PushConfig) -> bool:
                             f"当前设置推送整点为：{config.push_plus_hour}, 根据执行记录，本次执行整点为：{cron_hour}，执行推送")
                         return False
     except Exception as e:
-        print(f"读取cron_change_time文件出错: {e}")
+        print(f"读取cron_change_time文件出错: {type(e).__name__}")
     print(f"当前整点时间为：{time_bj}，不在配置的推送时间，不执行推送")
     return True
 

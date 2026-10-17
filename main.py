@@ -195,11 +195,11 @@ def run_single_account(total, idx, user_mi, passwd_mi):
         log_str += f'{exec_msg}\n'
         exec_result = {"user": user_mi, "success": success,
                        "msg": exec_msg}
-    except:
-        log_str += f"执行异常:{traceback.format_exc()}\n"
-        log_str += traceback.format_exc()
-        exec_result = {"user": user_mi, "success": False,
-                       "msg": f"执行异常:{traceback.format_exc()}"}
+    except Exception as error:
+        # Request exceptions may contain URLs with credentials.
+        error_message = f"执行异常：{type(error).__name__}"
+        log_str += f"{error_message}\n"
+        exec_result = {"user": user_mi, "success": False, "msg": error_message}
     print(log_str)
     return exec_result
 
@@ -233,6 +233,7 @@ def execute():
         summary = f"\n执行账号总数{total}，成功：{success_count}，失败：{total - success_count}"
         print(summary)
         push_util.push_results(push_results, summary, push_config)
+        return 1 if success_count < total else 0
     else:
         print(f"账号数长度[{len(user_list)}]和密码数长度[{len(passwd_list)}]不匹配，跳过执行")
         exit(1)
@@ -317,4 +318,4 @@ if __name__ == "__main__":
             print(f"多账号执行间隔：{sleep_seconds}")
             use_concurrent = False
         # endregion
-        execute()
+        raise SystemExit(execute())
