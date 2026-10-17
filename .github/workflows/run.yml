@@ -2,8 +2,8 @@ name: 刷步数
 
 on:
   schedule:
-    # 使用北京时间，并避开每小时开始时的 GitHub Actions 调度高峰
-    - cron: '23 8,10,12,14,16,22 * * *'
+    # 北京时间每天三次；依据历史运行记录缩减计划，减少计算资源使用
+    - cron: '23 12,16,22 * * *'
       timezone: 'Asia/Shanghai'
   workflow_dispatch:
 
