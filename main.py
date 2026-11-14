@@ -257,12 +257,21 @@ def prepare_user_tokens() -> dict:
 
 def persist_user_tokens():
     data_path = r"encrypted_tokens.data"
-    origin_str = json.dumps(user_tokens, ensure_ascii=False)
-    cipher_data = encrypt_data(origin_str.encode("utf-8"), aes_key, None)
+    data = json.dumps(user_tokens, ensure_ascii=False).encode("utf-8")
+    try:
+        with open(data_path, 'rb') as f:
+            previous = f.read()
+        # A fresh IV changes the ciphertext even when the tokens are unchanged.
+        if decrypt_data(previous, aes_key, None) == data:
+            print("令牌缓存内容未变化，跳过重新加密")
+            return
+    except (FileNotFoundError, ValueError):
+        # Create the missing cache or replace ciphertext that cannot be decrypted.
+        pass
+
+    cipher_data = encrypt_data(data, aes_key, None)
     with open(data_path, 'wb') as f:
         f.write(cipher_data)
-        f.flush()
-        f.close()
 
 
 if __name__ == "__main__":
